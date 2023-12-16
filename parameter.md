@@ -1,6 +1,6 @@
 ### *Note*: `Audio` and `Disk` modules require by default 1 second to record, you can either change the duration, or turn them off if you need faster generation.
 
-### Available RanGen() object parameters:
+### Available TRNGen() object parameters:
 #### `audio` (bool, optional)
 - **Description**: Includes audio entropy module into randomization or not.
 - **Default**: True
