@@ -74,7 +74,8 @@ class RanGen:
         random_hash = Entropy().extract(*random_values)
 
         # Save value to dataset.csv file inside dependencies folder
-        CSVManager(self.optional_parameters['csv_file_location']).save_data([random_hash])
+        if location := self.optional_parameters['csv_file_location']:
+            CSVManager(location).save_data([random_hash])
 
         return random_hash
 
