@@ -1,15 +1,15 @@
 import string
 import hashlib
 
-from entropies.audio import Audio
-from entropies.cursor import Cursor
-from entropies.disk import Disk
-from entropies.display import Display
-from entropies.network import Network
-from entropies.timer import Timer
+from trngen.entropies.audio import Audio
+from trngen.entropies.cursor import Cursor
+from trngen.entropies.disk import Disk
+from trngen.entropies.display import Display
+from trngen.entropies.network import Network
+from trngen.entropies.timer import Timer
 
-from utils.entropy_enhancer import Entropy
-from utils.csv_rw import CSVManager
+from trngen.utils.entropy_enhancer import Entropy
+from trngen.utils.csv_rw import CSVManager
 
 import concurrent.futures
 
@@ -21,7 +21,7 @@ import concurrent.futures
 class TRNGen:
     def __init__(self, audio=True, a_duration=1, a_samplerate=44100, a_channels=2, disk=True, d_duration=1, cursor=True,
                  display=True, network=True, timer=True, letters=True, digits=True, symbols=True,
-                 csv_file_location='dependencies/dataset.csv'):
+                 csv_file_location='dataset.csv'):
         self.optional_parameters = {
             'audio': audio,
             'a_duration': a_duration,
