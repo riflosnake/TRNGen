@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "TRNGen"
+version = "0.0.1"
+authors = [
+  { name="Flori Batusha", email="floribatusha0@gmail.com" },
+]
+description = "Truly Random Number Generator"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "pyautogui >= 0.9.54",
+    "psutil >= 5.9.6",
+    "sounddevice >= 0.4.6"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Check Github" = "https://github.com/riflosnake/TRNGen"
