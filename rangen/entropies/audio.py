@@ -1,5 +1,3 @@
-import random
-
 import sounddevice as sd
 import numpy as np
 
