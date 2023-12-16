@@ -1,4 +1,5 @@
-import sys
+import string
+import hashlib
 
 from entropies.audio import Audio
 from entropies.cursor import Cursor
@@ -7,13 +8,20 @@ from entropies.display import Display
 from entropies.network import Network
 from entropies.timer import Timer
 
-from utils.error_checker import check
 from utils.entropy_enhancer import Entropy
+from utils.csv_rw import CSVManager
 
 import concurrent.futures
 
+
+# TODO: need to optimize code for faster speed and lower resource usage.
+# TODO: add parameter value checking
+
+
 class RanGen:
-    def __init__(self, audio=True, a_duration=1, a_samplerate=44100, a_channels=2, disk=True, d_duration=1):
+    def __init__(self, audio=True, a_duration=1, a_samplerate=44100, a_channels=2, disk=True, d_duration=1, cursor=True,
+                 display=True, network=True, timer=True, letters=True, digits=True, symbols=True,
+                 csv_file_location='dependencies/dataset.csv'):
         self.optional_parameters = {
             'audio': audio,
             'a_duration': a_duration,
@@ -22,53 +30,114 @@ class RanGen:
 
             'disk': disk,
             'd_duration': d_duration,
+
+            'cursor': cursor,
+            'display': display,
+            'network': network,
+            'timer': timer,
+
+            'letters': string.ascii_letters if letters is True else letters,
+            'digits': string.digits if digits is True else digits,
+            'symbols': '!@#$%^&*()_+-=[]{}|;:\'",.<>/?`~' if symbols is True else symbols,
+
+            'csv_file_location': csv_file_location
         }
 
-    def hash(self):
+    def rangen(self):
         op = self.optional_parameters
-        # These entropies (audio and disk) add delay to code execution for registering in a time interval (DEFAULT 1 second), others are instant
-        audio_active, audio_duration, sample_rate, channels = True if str(op['audio']).lower() == 'true' else False, float(
-            op['a_duration']), int(op['a_samplerate']), int(op['a_channels'])
-        disk_active, disk_duration = True if str(op['disk']).lower() == 'true' else False, float(op['d_duration'])
-
-        timer = Timer()
+        # Audio and Disk add delay to code execution for registering in a time interval (DEFAULT 1 second), others are instant
+        audio_active, disk_active, cursor_active, display_active, network_active, timer_active = op['audio'], op['disk'], op['cursor'], op['display'], op['network'], op['timer']
+        if all(e is False for e in
+               (audio_active, disk_active, cursor_active, display_active, network_active, timer_active)):
+            raise RuntimeError('Cannot produce random value because all modules are turned off!')
+        # Run timer entropy module
+        timer = Timer() if timer_active else None
+        audio_duration, sample_rate, channels = op['a_duration'], op['a_samplerate'], op['a_channels']
+        disk_duration = op['d_duration']
 
         # Run each entropy module (except Timer) simultaneously using multithread
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = [executor.submit(func) for func in (module.return_value for module in [
                 Audio(duration=audio_duration, sample_rate=sample_rate, channels=channels) if audio_active else None,
-                Disk(interval=disk_duration) if disk_active else None, Cursor(), Display(), Network()] if
+                Disk(interval=disk_duration) if disk_active else None, Cursor() if cursor_active else None,
+                Display() if display_active else None, Network() if network_active else None] if
                                                           module is not None)]
 
+            # Wait for threads to end and shutdown executor
             concurrent.futures.wait(futures)
             executor.shutdown()
 
-            random_values = [timer.off()] + [val.result() for val in futures]
+            # Return and save into list values from every module
+            random_values = ([timer.off()] if timer_active else []) + [val.result() for val in futures]
 
         # XOR and hash combine all values from the 6 different entropy sources
         random_hash = Entropy().extract(*random_values)
 
+        # Save value to dataset.csv file inside dependencies folder
+        CSVManager(self.optional_parameters['csv_file_location']).save_data([random_hash])
+
         return random_hash
 
+    @staticmethod
+    def __int_to_base_n_alpha_string(number, base, charset, length):
+        length = length if length else len(str(number))
+        result = ''
+        while number > 0:
+            number, remainder = divmod(number, base)
+            result = charset[remainder] + result
 
-if __name__ == "__main__":
-    # Initialize RanGen object
-    generator = RanGen()
-    # Accessing parameters dictionary
-    optional_parameters = generator.optional_parameters
+        return result[:length]
 
-    # Check if user has added parameter changes from terminal
-    if len(sys.argv) > 1:
-        parameters = sys.argv[1:]
-        for parameter in parameters:
-            key, value = parameter.split('=')
-            optional_parameters[key] = value
+    def hash(self, algorithm: str = 'sha3_256'):
+        if algorithm not in hashlib.algorithms_available:
+            raise ValueError(f"Unsupported hash algorithm: {algorithm}")
+        hash_algorithm = getattr(hashlib, algorithm)
 
-    # Check for parameter value validity
-    check(optional_parameters)
+        return hash_algorithm(str(self.rangen()).encode('utf-8')).hexdigest()
 
-    # Modify parameters
-    generator.optional_parameters = optional_parameters
+    def percentage(self, simple: bool = False):
+        remainder = lambda integer_str: sum(int(digit) for digit in integer_str) % 10
+        if hashy := str(self.rangen()):
+            floor_div = len(hashy) // 2
+            first_half, second_half = remainder(hashy[floor_div:]), remainder(hashy[:len(hashy) - floor_div])
+            fractional = hashy[:12] if not simple else ''
+            return float('0.' + str(first_half) + str(second_half) + fractional)
 
-    # Output random hash result
-    print(generator.hash())
+    def integer(self, start: int, end: int):
+        if random_percentage := self.percentage():
+            return int(round((end - start) * random_percentage + start))
+        return False
+
+    def float(self, start: int or float, end: int or float):
+        if random_percentage := self.percentage():
+            return (end - start) * random_percentage + start
+        return False
+
+    def alphanumeric(self, length=None):
+        if integer_hash := self.rangen():
+            op = self.optional_parameters
+            charset = ''.join([op['letters'], op['digits'], op['symbols']])
+            return self.__int_to_base_n_alpha_string(integer_hash, len(charset), charset, length)
+        return ''
+
+    def choice(self, seq: iter):
+        if random_percentage := self.percentage():
+            index = int(random_percentage * len(seq))
+            return seq[index]
+
+    def shuffle(self, seq: iter, in_place=True):
+        if not in_place:
+            seq = seq.copy()
+        for i in range(len(seq) - 1, 0, -1):
+            j = self.integer(0, i)
+            seq[i], seq[j] = seq[j], seq[i]
+        return seq
+
+    def sample(self, seq: iter, sample_size):
+        if sample_size > len(seq):
+            raise ValueError("Sample size cannot be greater than the collection size.")
+
+        seq_copy = seq.copy()
+        self.shuffle(seq_copy)
+
+        return seq_copy[:sample_size]

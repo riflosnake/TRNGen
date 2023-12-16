@@ -1,1 +1,1 @@
-from core import RanGen
+from rangen.core import RanGen

@@ -17,8 +17,8 @@ class Display:
         max_region_width = int(screen_width * max_width_percentage / 100)
         max_region_height = int(screen_height * max_height_percentage / 100)
 
-        x = random.randint(0, screen_width - 1)
-        y = random.randint(0, screen_height - 1)
+        x = random.randint(1, screen_width - 1)
+        y = random.randint(1, screen_height - 1)
 
         width = random.randint(1, min(max_region_width, screen_width - x))
         height = random.randint(1, min(max_region_height, screen_height - y))
