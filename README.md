@@ -1,6 +1,6 @@
-# RanGen: Truly Random Number Generator
+# TRNGen: Truly Random Number Generator
 
-RanGen is a Python package that provides a secure and unpredictable random number generator by incorporating external entropy factors such as audio, disk and network I/O readings, events, display, mouse coordinates, and timer. These factors are combined using XOR, hashing algorithms, and linearity deviation to produce truly random values that avoid algorithmic prediction.
+TRNGen is a Python package that provides a secure and unpredictable random number generator by incorporating external entropy factors such as audio, disk and network I/O readings, events, display, mouse coordinates, and timer. These factors are combined using XOR, hashing algorithms, and linearity deviation to produce truly random values that avoid algorithmic prediction.
 
 # Content:
 
@@ -33,27 +33,27 @@ RanGen is a Python package that provides a secure and unpredictable random numbe
 
 # Installation
 
-*You can install RanGen using `pip`:*
+*You can install TRNGen using `pip`:*
 
 ```powershell
-pip install RanGen
+pip install TRNGen
 ```
 
 # How to use
 - ### Import
 ```python
-from rangen import RanGen
+from trngen import TRNGen
 ```
-- ### Create an instance of the RanGen generator
+- ### Create an instance of the TRNGen generator
 ```python
-generator = RanGen()
+generator = TRNGen()
 ```
   - ### Available parameters:
-    - Check here on [RanGen() parameters](parameter.md)
+    - Check here on [TRNGen() parameters](parameter.md)
 
 - ### Available functions:
 
-  - ####  `rangen()`
+  - ####  `trngen()`
     - Main function that generates and returns the random integer hash value
   - #### `hash(algorithm='sha3_256')`
     - Returns random cryptographic hash
