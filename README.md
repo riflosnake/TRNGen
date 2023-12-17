@@ -1,6 +1,6 @@
 # TRNGen: Truly Random Number Generator
 
-TRNGen is a Python package that provides a secure and unpredictable random number generator by incorporating external entropy factors such as audio, disk and network I/O readings, events, display, mouse coordinates, and timer. These factors are combined using XOR, hashing algorithms, and linearity deviation to produce truly random values that avoid algorithmic prediction.
+`TRNGen` is a Python package that provides a secure and unpredictable random number generator by incorporating `external entropy factors` such as audio, disk and network I/O readings, events, display, mouse coordinates, and timer. These factors are combined using XOR, hashing algorithms, and linearity deviation to produce truly random values that avoid algorithmic prediction.
 
 # Content:
 
